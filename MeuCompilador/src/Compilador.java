@@ -88,7 +88,8 @@ JAVACODE void inicio()
                      Simbolo simb; Token t;
     t = jj_consume_token(VAR);
                 simb = new Simbolo(t.image);
-        tabela.inclui(simb);
+                if(!tabela.isExiste(t.image)) tabela.inclui(simb);
+                else System.out.print("A vari\u00e1vel -" + t.image + "- j\u00e1 existe!\u005cn");
     jj_consume_token(ATRIB);
     expressao();
     jj_consume_token(PV);
@@ -304,6 +305,7 @@ JAVACODE void inicio()
   }
 
   static final public void termo4() throws ParseException {
+                Token t;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case AP:
       jj_consume_token(AP);
@@ -322,7 +324,9 @@ JAVACODE void inicio()
       jj_consume_token(NUM);
       break;
     case VAR:
-      jj_consume_token(VAR);
+      t = jj_consume_token(VAR);
+          if (!tabela.isExiste(t.image))
+                System.out.println("Erro sem\u00e2ntico \u005cnA vari\u00e1vel -" + t.image + "- n\u00e3o foi inicializada");
       break;
     case STRING:
       jj_consume_token(STRING);

@@ -102,7 +102,8 @@ void atribuicao(): { Simbolo simb; Token t; }
 {
 	t = <VAR> {
 		simb = new Simbolo(t.image);
-        tabela.inclui(simb);
+		if(!tabela.isExiste(t.image)) tabela.inclui(simb);
+		else System.out.print("A variável -" + t.image + "- já existe!\n");
 	}
 	<ATRIB> expressao() <PV>
 }
@@ -157,13 +158,15 @@ void termo3():{ }
 	termo4() ((<MUL>|<DIV>) termo4())*
 }
 
-void termo4():{ }
+void termo4():{ Token t; }
 {
 	<AP> expressao() <FP>
 	|<NUM>
 	|<SOMA><NUM>
 	|<SUB><NUM>
-	|<VAR>
+	|t = <VAR>
+	{ if (!tabela.isExiste(t.image))
+		System.out.println("Erro semântico \nA variável -" + t.image + "- não foi inicializada"); 
+    }
 	|<STRING>
-
 }
