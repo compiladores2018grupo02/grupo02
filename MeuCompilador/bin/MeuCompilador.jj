@@ -1,84 +1,127 @@
-options {
+options
+{
   DEBUG_PARSER = false;
   DEBUG_TOKEN_MANAGER = false;
 }
 
-// ----- início: analisador léxico
+// ----- in�cio: analisador l�xico
 PARSER_BEGIN(Compilador)
 import java.io.*;
 import minhasClasses.*;
 
-public class Compilador {
-	static Tabela tabela = new Tabela();
-  
-   	public static void main(String args[])  throws ParseException  {
-      Compilador compilador = null;
-      try {
-         compilador = new Compilador(new FileInputStream("nossoexemplo.spc"));
-         Compilador.inicio();
-         System.out.println(tabela.toString());
-      }
-      catch(FileNotFoundException e) {
-         System.out.println("Erro: arquivo nao f sencontrado");
-      }
-      catch(TokenMgrError e) {
-         System.out.println("Erro lexico\n" + e.getMessage());
-      }
-      catch(ParseException e) {
-         System.out.println("Erro sintático\n" + e.getMessage());
-      }
-   }
+public class Compilador implements Config
+{
+  static Tabela tabela = new Tabela();
+
+  public static void main(String args []) throws ParseException
+  {
+    Compilador compilador = null;
+    try
+    {
+      compilador = new Compilador(new FileInputStream("nossoexemplo.spc"));
+      Compilador.programa();
+      System.out.println(tabela.toString());
+    }
+    catch (FileNotFoundException e)
+    {
+      System.out.println("Erro: arquivo nao encontrado");
+    }
+    catch (TokenMgrError e)
+    {
+      System.out.println("Erro lexico\n" + e.getMessage());
+    }
+    catch (ParseException e)
+    {
+      System.out.println("Erro sintatico\n" + e.getMessage());
+    }
+  }
 }
 
+PARSER_END(Compilador)
 
-PARSER_END(Compilador) 
-// ----- fim: analisador léxico
- 
-SKIP : { " " | "\t" | "\r" | "\n" }
+// ----- fim: analisador l�xico
+SKIP :
+{
+  " "
+| "\t"
+| "\r"
+| "\n"
+}
 
 //TOKENS DE COMANDOS 
-TOKEN [IGNORE_CASE] : {
-  		<EXIBE: "exibe" >  |
-  		<LEITURA: "le" > | 
-		<SE: "se" > |
-      	<FIMSE: "fim-se" > |
-      	<ENQUANTO: "enquanto" > |
-      	<FIMENQUANTO: "fim-enquanto" > 
+TOKEN [ IGNORE_CASE ] :
+{
+  < EXIBE : "exibe" >
+| 
+  < LEITURA : "le" >
+| 
+  < SE : "se" >
+| 
+  < FIMSE : "fim-se" >
+| 
+  < ENQUANTO : "enquanto" >
+| 
+  < FIMENQUANTO : "fim-enquanto" >
 }
+
 //TOKENS DE TIPOS 
-TOKEN [IGNORE_CASE] : {
-  		<NUMERO: "numero" >  |
-  		<PALAVRA: "palavra" >  
+TOKEN [ IGNORE_CASE ] :
+{
+  < NUMERO : "numero" >
+| 
+  < PALAVRA : "palavra" >
 }
+
 //----------CARACTERES----------
-TOKEN : {
-		< #CHAR: ["a"-"z"] | ["A" - "Z"] > | 
-   		< AP: "(" > |
-    	< FP: ")" > |
-		< PV: ";" > |
-		< VIRGULA: "," > |
-    	< STRING: "\"" (~["\""])* "\"" > |
-   		< VAR: (< CHAR >)+ (["a" - "z", "A" - "Z" ,"0" - "9", "_"])* > 
+TOKEN :
+{
+  < #CHAR :
+    [ "a"-"z" ]
+  | [ "A"-"Z" ] >
+| 
+  < AP : "(" >
+| 
+  < FP : ")" >
+| 
+  < PV : ";" >
+| 
+  < VIRGULA : "," >
+| 
+  < STRING : "\"" (~[ "\"" ])* "\"" >
+| 
+  < VAR : (< CHAR >)+ ([ "a"-"z", "A"-"Z", "0"-"9", "_" ])* >
 }
+
 //-----------NUMEROS-----------
-TOKEN : {
-	< #DIGIT: ["0"-"9"] > |  
-    < NUM: (< DIGIT >)* (".")? (< DIGIT >)+ > 
+TOKEN :
+{
+  < #DIGIT : [ "0"-"9" ] >
+| 
+  < NUM : (< DIGIT >)* (".")? (< DIGIT >)+ >
 }
+
 //----------OPERADORES---------
-TOKEN : {
- 	< SOMA: "+" > |
-	< SUB: "-" > |
-	< MUL: "*" > |
-    < DIV: "/" > |
-    < OU: "OR" > |
-    < ATRIB: "<-"  > |
-    < IGUAL: "=" > |
-   	< CONCAT: "&" > 
+TOKEN :
+{
+  < SOMA : "+" >
+| 
+  < SUB : "-" >
+| 
+  < MUL : "*" >
+| 
+  < DIV : "/" >
+| 
+  < OU : "OR" >
+| 
+  < ATRIB : "<-" >
+| 
+  < IGUAL : "=" >
+| 
+  < CONCAT : "&" >
 }
-  
+
 /*
-JAVACODE void inicio()
+JAVACODE void programa()
 {
       Token t;
    do {
@@ -88,85 +131,160 @@ JAVACODE void inicio()
    while(t.kind != EOF);
 }
 */
-
-void inicio(): { }
+void inicio() :
+{}
 {
-	(comando())* < EOF >
-}
-void comando(): { }
-{
-	atribuicao() | declaracao() | se() | enquanto() | le() | exibe ()
-}
- 
-void atribuicao(): { Simbolo simb; Token t; }
-{
-	t = <VAR> {
-		simb = new Simbolo(t.image);
-		if(!tabela.isExiste(t.image)) tabela.inclui(simb);
-		else System.out.print("A variável -" + t.image + "- já existe!\n");
-	}
-	<ATRIB> expressao() <PV>
+  programa() < EOF >
 }
 
-void declaracao():{ }
+void programa() :
+{}
 {
-	(<NUMERO>|<PALAVRA>) <VAR> ( <ATRIB> expressao() )? (<VIRGULA> <VAR> ( <ATRIB> expressao() )? )* <PV>
+  (
+    comando()
+  )*
 }
 
-void se(): { }
+void comando() :
+{}
 {
-	 <SE> <AP> expressao() <FP> inicio() <FIMSE>
+  atribuicao()
+| declaracao()
+| se()
+| enquanto()
+| le()
+| exibe()
 }
 
-void enquanto():{ }
+void atribuicao() :
 {
-	<ENQUANTO> <AP> expressao() <FP> inicio() <FIMENQUANTO>
+  Simbolo simb;
+  Token t;
+}
+{
+  t = < VAR >
+  {
+    simb = new Simbolo(t.image);
+    if (!tabela.isExiste(t.image)) tabela.inclui(simb);
+    else System.out.print("A vari\u00c3\u00a1vel -" + t.image + "- j\u00c3\u00a1 existe!\n");
+  }
+  < ATRIB > expressao() < PV >
 }
 
-void le():{ }
+void declaracao() :
+{}
 {
-	<LEITURA> <VAR> ( <VIRGULA> <VAR> )* <PV>
+  (
+    < NUMERO >
+  | < PALAVRA >
+  )
+  < VAR >
+  (
+    < ATRIB > expressao()
+  )?
+  (
+    < VIRGULA > < VAR >
+    (
+      < ATRIB > expressao()
+    )?
+  )*
+  < PV >
 }
 
-void exibe():{ }
+void se() :
+{}
 {
-  	<EXIBE> expressao() ( <VIRGULA> expressao() )* <PV>
+  < SE > < AP > expressao() < FP > programa() < FIMSE >
 }
 
-void expressao():{ }
+void enquanto() :
+{}
 {
-	termo()(<OU> termo())*
+  < ENQUANTO > < AP > expressao() < FP > programa() < FIMENQUANTO >
 }
 
-void termo():{ }
+void le() :
+{}
 {
-	 termo1() (<IGUAL> termo1())?
+  < LEITURA > < VAR > (< VIRGULA > < VAR >)* < PV >
 }
 
-void termo1():{ }
+void exibe() :
+{}
 {
-	termo2() (<CONCAT> termo2())*
+  < EXIBE > expressao()
+  (
+    < VIRGULA > expressao()
+  )*
+  < PV >
 }
 
-void termo2():{}
+void expressao() :
+{}
 {
-	termo3() ((<SOMA>|<SUB>) termo3())*
+  termo()
+  (
+    < OU > termo()
+  )*
 }
 
-void termo3():{ }
+void termo() :
+{}
 {
-	termo4() ((<MUL>|<DIV>) termo4())*
+  termo1()
+  (
+    < IGUAL > termo1()
+  )?
 }
 
-void termo4():{ Token t; }
+void termo1() :
+{}
 {
-	<AP> expressao() <FP>
-	|<NUM>
-	|<SOMA><NUM>
-	|<SUB><NUM>
-	|t = <VAR>
-	{ if (!tabela.isExiste(t.image))
-		System.out.println("Erro semântico \nA variável -" + t.image + "- não foi inicializada"); 
-    }
-	|<STRING>
+  termo2()
+  (
+    < CONCAT > termo2()
+  )*
+}
+
+void termo2() :
+{}
+{
+  termo3()
+  (
+    (
+      < SOMA >
+    | < SUB >
+    )
+    termo3()
+  )*
+}
+
+void termo3() :
+{}
+{
+  termo4()
+  (
+    (
+      < MUL >
+    | < DIV >
+    )
+    termo4()
+  )*
+}
+
+void termo4() :
+{
+  Token t;
+}
+{
+  < AP > expressao() < FP >
+| < NUM >
+| < SOMA > < NUM >
+| < SUB > < NUM >
+| t = < VAR >
+  {
+    if (!tabela.isExiste(t.image)) 
+    System.out.println("Erro semjjjj\u00c3\u00a2ntico \nA vari\u00c3\u00a1vel -" + t.image + "- n\u00c3\u00a3o foi inicializada");
+  }
+| < STRING >
 }

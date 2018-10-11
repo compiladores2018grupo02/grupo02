@@ -1,21 +1,34 @@
 package minhasClasses;
+
+import jdk.nashorn.internal.parser.Token;
+
 public class Simbolo {
       private String nome;      //nome da variável
       private int referencia;   //referência usada na geração do código destino
-      private static int marcador = 1; //armazena a última referência incluída na tabela
+      protected TipoDado tipo;
+      Token token;
+      
+      public Simbolo(Token token, TipoDado tipo) {
 
-      public Simbolo(String _nome) {
-            this.nome = _nome;
-            this.referencia = Simbolo.marcador;
-            Simbolo.marcador += 2;
       }
-      public String getNome() {
+      
+      public Simbolo(Token token, TipoDado tipo, int referencia) {
+
+      }
+      
+      public String getLexema() {
             return this.nome;
       }
+      
+      public TipoDado getTipo() {
+    	  return this.tipo;
+      }
+      
       public int getReferencia() {
             return this.referencia;
       }
+      
       public String toString() {
-            return "Nome:" + this.getNome() + " / " + "Referência:" + this.getReferencia() + "\n";
+            return "Nome:" + this.getLexema() + " / " + "Referência:" + this.getReferencia() + "\n";
       }
 }
